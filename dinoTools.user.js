@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			dinoTools
 // @version			0.1
-// @description		<3
+// @description			<3
 // @author			Angelisium
 // @match			http://en.dinorpg.com/*
 // @match			http://es.dinorpg.com/*

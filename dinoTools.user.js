@@ -279,7 +279,36 @@ class haxeUnserializer {
                 c.setAttribute("onmouseover", `mt.js.Tip.show(this,'<div class=\\u0027content\\u0027>${/'/gi[Symbol.replace](b._text, '\\u0027')}</div>','smallTip')`);
             });
             a.outerHTML = `<a class="button" onclick="document.querySelector('#map').removeAttribute('style');" style="margin:5px auto;text-align:center;line-height:20px">Map</a>`;
-            console.log(a, name, data, mapvar);
+        } else if(name.startsWith('title_')) {
+            let title = {
+                node: 'h3',
+                id: `title_dinoTools`,
+                text: data.title
+            };
+            if(data.sub) {
+                title.children = [{
+                    node: 'span',
+                    style: [
+                        'color: #a5512d', 'text-shadow: initial',
+                        'margin-left: 5px'
+                    ].join(';'),
+                    text: data.sub
+                }];
+            }
+            a.parentElement.appendChild(html_generator(title));
+            a.outerHTML = [
+                '<style>h3#title_dinoTools {',
+                    'color: #71b703;', 'font-size: 19px;', 'text-shadow: 1px 0px #FDF1BF, 0px 1px #FDF1BF, -1px 0px #FDF1BF, 0px -1px #FDF1BF, 0px -1px 2px #B25D21;',
+                    'line-height: 28px;', 'margin-left: 12px',
+                '} h3#title_dinoTools:before {',
+                    `content: "${data.title}";`, 'position: absolute;',
+                    'z-index: 1;', 'color: #9cd305;', 'clip-path: polygon(0% 60%, 100% 60%, 100% 100%, 0 100%);', 'text-shadow: none',
+                '} h3#title_dinoTools:first-letter {',
+                    'color: inherit;', 'font-size: inherit',
+                '}</style>'
+            ].join('');
+        } else {
+            console.log(a, name, data);
         }
     });
 })();

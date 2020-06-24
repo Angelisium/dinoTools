@@ -44,8 +44,8 @@ class haxeUnserializer {
     constructor(str) {
         this.buffer= str;
         this.length= str.length;
-		this.cache= [];
-		this.scache= []; //cache pour les strings
+        this.cache= [];
+        this.scache= []; //cache pour les strings
         this.pos= 0;
         this.unserialized= this.unserialize();
     }
@@ -58,19 +58,19 @@ class haxeUnserializer {
                 i: 'readDigits',
                 j: 'readEnum',
                 k: 'readNaN',
-				l: 'readList',
+                l: 'readList',
                 m: 'readNegativeInfinity',
                 n: 'readNull',
                 o: 'readObject',
                 p: 'readPositiveInfinity',
-				r: 'readCache',
+                r: 'readCache',
                 t: 'readTrue',
                 u: 'readMultipleNull',
-				v: 'readDate',
+                v: 'readDate',
                 x: 'readError',
                 y: 'readString',
                 z: 'readZero',
-				R: 'readStringCache'
+                R: 'readStringCache'
             };
         if(b.hasOwnProperty(a)) {
             return this[b[a]]();
@@ -78,7 +78,7 @@ class haxeUnserializer {
             throw `Invalid char "${this.buffer[this.pos-1]}" (${this.buffer.charCodeAt(this.pos-1)}) at position ${this.pos-1}`;
         }
     }
-	readArray() {
+    readArray() {
         let a= [];
         while(true) {
             let b= this.buffer[this.pos];
@@ -91,21 +91,21 @@ class haxeUnserializer {
                 a.push(this.unserialize());
             }
         }
-		this.cache.push(a);
+        this.cache.push(a);
         return a;
     }
-	readFloat() {
-		let a= this.pos;
-		while(true) {
+    readFloat() {
+        let a= this.pos;
+        while(true) {
             //voir si je peut obtimiser la condition
-			if(["+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "e", "E"].indexOf(this.buffer[this.pos])<0) break;
-			this.pos++;
-		}
-		return parseFloat(this.buffer.slice(a, this.pos));
-	}
-	readFalse() {
-		return false;
-	}
+            if(["+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "e", "E"].indexOf(this.buffer[this.pos])<0) break;
+            this.pos++;
+        }
+        return parseFloat(this.buffer.slice(a, this.pos));
+    }
+    readFalse() {
+        return false;
+    }
     readDigits() {
         let a= 0,
             b= (this.buffer[this.pos]==='-')?(this.pos++,true):false;
@@ -127,15 +127,15 @@ class haxeUnserializer {
         while (0<c--) {
             d.push(this.unserialize());
         }
-		this.cache.push(`${a}.${b}(${d.join(', ')})`);
+        this.cache.push(`${a}.${b}(${d.join(', ')})`);
         return `${a}.${b}(${d.join(', ')})`;
     }
-	readNaN() {
-		return Math.NaN;
-	}
-	readList() {
-		let a= [];
-		while(true) {
+    readNaN() {
+        return Math.NaN;
+    }
+    readList() {
+        let a= [];
+        while(true) {
             let b= this.buffer[this.pos];
             if(b==="h") {
                 this.pos++;
@@ -144,16 +144,16 @@ class haxeUnserializer {
                 a.push(this.unserialize());
             }
         }
-		this.cache.push(a);
+        this.cache.push(a);
         return a;
-	}
-	readNegativeInfinity() {
-		return Math.NEGATIVE_INFINITY;
-	}
-	readNull() {
-		return null;
-	}
-	readObject() {
+    }
+    readNegativeInfinity() {
+        return Math.NEGATIVE_INFINITY;
+    }
+    readNull() {
+        return null;
+    }
+    readObject() {
         let a= {};
         while(true){
             if(this.pos>=this.length) throw "Invalid object"; else if(this.buffer[this.pos]==="g") break; else {
@@ -164,20 +164,20 @@ class haxeUnserializer {
                 }
             }
         } this.pos++;
-		this.cache.push(a);
+        this.cache.push(a);
         return a;
     }
-	readPositiveInfinity() {
-		return Math.POSITIVE_INFINITY;
-	}
-	readCache() {
-		let a= this.readDigits();
-		if(a<0||a>this.cache.length) throw "Invalid reference";
-		return this.cache[a];
-	}
-	readTrue() {
-		return true;
-	}
+    readPositiveInfinity() {
+        return Math.POSITIVE_INFINITY;
+    }
+    readCache() {
+        let a= this.readDigits();
+        if(a<0||a>this.cache.length) throw "Invalid reference";
+        return this.cache[a];
+    }
+    readTrue() {
+        return true;
+    }
     readMultipleNull() {
         let a= [],
             b= this.readDigits();
@@ -186,31 +186,31 @@ class haxeUnserializer {
         }
         return a;
     }
-	readDate() {
-		let a= this.pos;
-		this.pos+= 19;
-		return new Date(this.buffer.slice(a, this.pos));
-	}
-	readError() {
-		throw this.unserialize();
-	}
+    readDate() {
+        let a= this.pos;
+        this.pos+= 19;
+        return new Date(this.buffer.slice(a, this.pos));
+    }
+    readError() {
+        throw this.unserialize();
+    }
     readString() {
         let a= this.readDigits();
         if(this.buffer[this.pos++]!==":"||(this.length-this.pos)<a) throw "Invalid string length";
         else {
-			let b= decodeURL(this.buffer.slice(this.pos, (this.pos+=a)));
-			this.scache.push(b);
+            let b= decodeURL(this.buffer.slice(this.pos, (this.pos+=a)));
+            this.scache.push(b);
             return b;
         }
     }
     readZero() {
-		return 0;
-	}
-	readStringCache() {
-		let a= this.readDigits();
-		if(a<0||a>this.scache.length) throw "Invalid string reference";
-		return this.scache[a];
-	}
+        return 0;
+    }
+    readStringCache() {
+        let a= this.readDigits();
+        if(a<0||a>this.scache.length) throw "Invalid string reference";
+        return this.scache[a];
+    }
 }
 
 (function() {

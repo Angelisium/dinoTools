@@ -213,7 +213,7 @@ class haxeUnserializer {
     }
 }
 
-(function() {
+(function init() {
     'use strict';
     document.querySelectorAll('embed').forEach(a=> {
         let name = a.getAttribute('name'),
@@ -279,6 +279,10 @@ class haxeUnserializer {
                 c.setAttribute("onmouseover", `mt.js.Tip.show(this,'<div class=\\u0027content\\u0027>${/'/gi[Symbol.replace](b._text, '\\u0027')}</div>','smallTip')`);
             });
             a.outerHTML = `<a class="button" onclick="document.querySelector('#map').removeAttribute('style');" style="margin:5px auto;text-align:center;line-height:20px">Map</a>`;
+            document.querySelector('#map').addEventListener('dblclick', function(eVe) {
+                eVe.preventDefault();
+                console.log(eVe);
+            });
         } else if(name.startsWith('title_')) {
             let title = {
                 node: 'h3',

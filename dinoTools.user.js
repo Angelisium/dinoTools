@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         dinoTools
-// @version      0.1
+// @version      0.4
 // @description  <3
 // @author       Angelisium
 // @match        http://en.dinorpg.com/*
 // @match        http://es.dinorpg.com/*
 // @match        http://www.dinorpg.com/*
-// @grant        none
+// @grant        unsafeWindow
 // ==/UserScript==
 
 function html_generator(a) {
@@ -268,7 +268,7 @@ class haxeUnserializer {
                     onmouseout: 'mt.js.Tip.hide()',
                     children: [{
                         node: 'img',
-                        src: `${window.location.origin}/img/forum/smiley/map_${inf[2]}.gif`
+                        src: `https://raw.githubusercontent.com/Angelisium/dinoTools/master/image/${inf[2]}.png`
                     }]
                 }));
             });
@@ -279,9 +279,15 @@ class haxeUnserializer {
                 c.setAttribute("onmouseover", `mt.js.Tip.show(this,'<div class=\\u0027content\\u0027>${/'/gi[Symbol.replace](b._text, '\\u0027')}</div>','smallTip')`);
             });
             a.outerHTML = `<a class="button" onclick="document.querySelector('#map').removeAttribute('style');" style="margin:5px auto;text-align:center;line-height:20px">Map</a>`;
-            document.querySelector('#map').addEventListener('dblclick', function(eVe) {
-                eVe.preventDefault();
-                console.log(eVe);
+            document.querySelector('#map').addEventListener('contextmenu', async function(eVe) {
+                if(eVe.target.parentNode.nodeName==="A"&&eVe.target.getAttribute('style')!=null) {
+                    eVe.preventDefault();
+                    var observer = new MutationObserver((eVe)=> {init(); observer.disconnect();document.querySelector('#map').removeAttribute('style')});
+                    observer.observe(document.querySelector('#dinozPanel'), {childList: true});
+                    let a = await fetch(eVe.target.parentNode.getAttribute('href')).then(a=>a.text());
+                    document.querySelector("#map").remove();
+                    document.querySelector("#dinozPanel li:nth-child(1) a").click();
+                }
             });
         } else if(name.startsWith('title_')) {
             let title = {
@@ -311,6 +317,9 @@ class haxeUnserializer {
                     'color: inherit;', 'font-size: inherit',
                 '}</style>'
             ].join('');
+        } else if(name.startsWith('levelup')) {
+            a.parentElement.parentElement.setAttribute('style', 'display:none');
+            unsafeWindow.toggleView();
         } else {
             console.log(a, name, data);
         }

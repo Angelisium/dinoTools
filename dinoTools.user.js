@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         dinoTools
-// @version      0.4
+// @version      0.6
 // @description  <3
 // @author       Angelisium
 // @match        http://en.dinorpg.com/*
@@ -38,6 +38,31 @@ function urlDecode(str) {
         let b = a.split('=');
         if(b.length>1) obj[b.shift()] = decodeURL(b.join('='));
     }); return obj;
+}
+
+async function Gather_verif(a) {
+    let item = document.querySelectorAll('#dinoToolGather .sel'),
+        logs = document.querySelector('#log');
+    if(item.length===a._clicks) {
+        logs.innerText+= `\n${a._txt_wait}`;
+        let tab = [];
+        item.forEach(z=> {
+            tab.push(z.getAttribute('data-loy'));
+            z.removeAttribute('data-loy');
+            z.setAttribute('class', 'cel');
+        });
+        let reponse = await fetch(`${window.location.origin}${a._url}l${tab.join('')}h`).then(rep=>rep.text()),
+            data = new haxeUnserializer(reponse).unserialized;
+        if(data.length>0) {
+            logs.innerText+= `\n${a._txt_success}`;
+            while(data.length>0) {
+                let rec = data.shift();
+                logs.innerText+= `\n${rec._name}`;
+            }
+        } else {
+            logs.innerText+= `\n${a._txt_fail}`;
+        }
+    }
 }
 
 class haxeUnserializer {
@@ -213,6 +238,8 @@ class haxeUnserializer {
     }
 }
 
+unsafeWindow.haxeUnserializer = haxeUnserializer;
+
 (function init() {
     'use strict';
     document.querySelectorAll('embed').forEach(a=> {
@@ -320,6 +347,83 @@ class haxeUnserializer {
         } else if(name.startsWith('levelup')) {
             a.parentElement.parentElement.setAttribute('style', 'display:none');
             unsafeWindow.toggleView();
+        } else if(name.startsWith('gather')) {
+            let gathervar = new haxeUnserializer(data.data),
+                undata = gathervar.unserialized,
+                gathhtml = html_generator({
+                    node: 'div',
+                    id: 'dinoToolGather',
+                    children: [{
+                        node: 'style',
+                        text: [
+                            '#dinoToolGather {',
+                                'display: flex;',
+                                'flex-direction: row;',
+                                'flex-wrap: wrap;',
+                                'justify-content: flex-start;',
+                                'align-content: flex-start;',
+                                'align-items: flex-start;',
+                                'border: 4px solid #b86737;',
+                                'box-shadow: 0 5px #792b01;',
+                                'margin: 15px;',
+                                `max-width: ${25*undata._size}px;`,
+                                'background-color: #7eb400;',
+                            '} div.cel {',
+                                'display: inline-block;',
+                                'height: 25px;',
+                                'width: 25px;',
+                                'background-color: #cb914b;',
+                            '} div.dam {',
+                                'background-color: #be7d3a;',
+                            '} div.cel:not([data-loy]) {',
+                                'background-color: transparent;',
+                            '} div.sel, div.cel[data-loy]:hover {',
+                                'box-shadow: inset 1px 1px #e2ce87, inset -1px -1px #e2ce87;',
+                                'cursor: pointer;',
+                            '} pre#log {',
+                                'margin: 5px 12px;',
+                                'width: auto;',
+                                'background-color: #bc683c;',
+                                'border: 1px solid #ff9f22;',
+                                'padding: 5px',
+                            '}'
+                        ].join('')
+                    }]
+                });
+            let rcl = [
+                ['', ' dam'],
+                [' dam', '']
+            ];
+            for(let y=0;y<undata._size;y++) {
+                for(let x=0;x<undata._size;x++) {
+                    let cel = {
+                        node: 'div',
+                        class: 'cel'
+                    };
+                    if(!undata._d[x]||!undata._d[x][y]||undata._d[x][y]!==true) {
+                        cel['data-loy'] = `oy4%3A%255Fxi${x}y4%3A%255Fyi${y}g`;
+                        cel.class+= rcl[x%2][y%2];
+                    }
+                    gathhtml.appendChild(html_generator(cel));
+                }
+            }
+            a.parentElement.parentElement.parentElement.appendChild(html_generator({
+                node: 'pre',
+                id: 'log',
+                text: `_clicks: ${undata._clicks}`
+            }));
+            a.parentElement.parentElement.replaceWith(gathhtml);
+            document.querySelector('#dinoToolGather').addEventListener('click', function(eVe) {
+                let loy = eVe.target.getAttribute('data-loy');
+                if(loy) {
+                    if(eVe.target.classList.contains('sel')) {
+                        eVe.target.classList.remove('sel');
+                    } else {
+                        eVe.target.classList.add('sel');
+                        Gather_verif(undata);
+                    }
+                }
+            });
         } else {
             console.log(a, name, data);
         }
